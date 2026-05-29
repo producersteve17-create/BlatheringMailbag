@@ -1,3 +1,6 @@
+Here is the complete HTML file with the honeypot added exactly as requested. Everything else—including your styling, recording logic, and Google Script configuration—remains completely untouched.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,6 +156,10 @@
                 <textarea id="producerNotes" placeholder="Any context, pronounciation or notes for Producer Steve? (not required)"></textarea>
             </div>
 
+            <div style="display:none !important; visibility:hidden !important;">
+                <input type="text" id="honeypot_field" autocomplete="off" tabindex="-1">
+            </div>
+
             <button type="submit" id="submitBtn" class="btn-primary" disabled>Send Message to Drive</button>
         </form>
         <div id="statusMessage"></div>
@@ -266,6 +273,17 @@
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // Check honeypot field
+        const honey = document.getElementById('honeypot_field').value;
+        if (honey) {
+            console.warn("Bot detected via honeypot.");
+            // Pretend it worked so the bot thinks it succeeded, but stop execution
+            document.getElementById('statusMessage').style.color = "#10b981";
+            document.getElementById('statusMessage').textContent = "🚀 Message sent successfully! Check out the show!";
+            document.getElementById('uploadForm').reset();
+            return;
+        }
+        
         submitBtn.disabled = true;
         submitBtn.textContent = "Uploading... Please wait.";
         const statusDiv = document.getElementById('statusMessage');
@@ -322,3 +340,5 @@
 
 </body>
 </html>
+
+```
