@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Blathering Live</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --neon-green: rgba(34, 197, 94, 0.5);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0b0f19 0%, #0f172a 100%);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .hero-logo {
+            max-width: 350px;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 15px 30px var(--neon-green));
+            animation: float 6s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            z-index: 5;
+            border-top: 3px solid #22c55e; 
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn-link {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 6px;
+            font-weight: bold;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+
+        .btn-link:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        /* Optional: Giving the Patreon button a slightly different color if you want it to stand out */
+        .btn-patreon {
+            background-color: #f96854; /* Patreon Brand Orange */
+        }
+        .btn-patreon:hover {
+            background-color: #e05b49;
+        }
+    </style>
+</head>
+<body>
+
+<img src="tbc-logo.png" alt="The Blathering Live Logo" class="hero-logo">
+
+<div class="container">
+    <a href="YOUR_YOUTUBE_LINK_HERE" target="_blank" class="btn-link">📺 The Blathering on YouTube</a>
+    <a href="YOUR_PATREON_LINK_HERE" target="_blank" class="btn-link btn-patreon">🧡 Support Ken on Patreon</a>
+    <a href="YOUR_GAMING_CHANNEL_LINK_HERE" target="_blank" class="btn-link">🎮 Blathering Gaming Channel</a>
+    <a href="YOUR_LINKTREE_LINK_HERE" target="_blank" class="btn-link" style="background-color: #475569;">🔗 More Links</a>
+</div>
+
+</body>
+</html>
