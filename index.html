@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Blathering - Mailbag Segment</title>
+    <title>The Blathering Live</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -12,31 +12,27 @@
             --accent-hover: #2563eb;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --neon-green: rgba(34, 197, 94, 0.5); /* Adjusted to match the logo's vibe */
+            --neon-green: rgba(34, 197, 94, 0.5);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            /* Added a subtle gradient to the dark background for more depth */
             background: linear-gradient(135deg, #0b0f19 0%, #0f172a 100%);
             color: var(--text-main);
             display: flex;
-            flex-direction: column; /* Stacks the logo and container vertically */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            gap: 30px; /* Space between logo and form */
+            gap: 30px;
         }
 
-        /* --- NEW LOGO STYLES --- */
         .hero-logo {
             max-width: 350px;
             width: 100%;
             height: auto;
-            /* The magic glow effect pulling from the image transparency */
             filter: drop-shadow(0 15px 30px var(--neon-green));
-            /* Subtle floating animation */
             animation: float 6s ease-in-out infinite;
             z-index: 10;
         }
@@ -46,7 +42,6 @@
             50% { transform: translateY(-8px); }
             100% { transform: translateY(0px); }
         }
-        /* ----------------------- */
 
         .container {
             background-color: var(--card-bg);
@@ -57,58 +52,36 @@
             max-width: 450px;
             position: relative;
             z-index: 5;
-            /* Optional: subtle green top border to tie the design together */
             border-top: 3px solid #22c55e; 
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        h2 { margin-top: 0; text-align: center; }
-        .subtitle { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; }
-        input[type="text"], textarea, input[type="file"] {
+        
+        .btn-link {
+            display: block;
             width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #475569;
-            background-color: #0f172a;
-            color: white;
-            box-sizing: border-box;
-        }
-        textarea { resize: vertical; height: 80px; }
-        .option-divider {
-            text-align: center;
-            margin: 15px 0;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            position: relative;
-        }
-        .record-box {
-            background-color: #0f172a;
-            border: 1px dashed #475569;
-            border-radius: 6px;
             padding: 15px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
             text-align: center;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
             border-radius: 6px;
             font-weight: bold;
-            cursor: pointer;
+            box-sizing: border-box;
             transition: background 0.2s;
         }
-        .btn-primary { background-color: var(--accent); color: white; }
-        .btn-primary:hover { background-color: var(--accent-hover); }
-        .btn-primary:disabled { background-color: #475569; cursor: not-allowed; }
-        .btn-record { background-color: #ef4444; color: white; margin-bottom: 10px; }
-        .btn-record.recording { background-color: #b91c1c; animation: pulse 1.5s infinite; }
-        audio { width: 100%; margin-top: 10px; }
-        #statusMessage { text-align: center; margin-top: 15px; font-weight: 500; }
-        .hidden { display: none !important; }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
+
+        .btn-link:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        /* Optional: Giving the Patreon button a slightly different color if you want it to stand out */
+        .btn-patreon {
+            background-color: #f96854; /* Patreon Brand Orange */
+        }
+        .btn-patreon:hover {
+            background-color: #e05b49;
         }
     </style>
 </head>
@@ -117,223 +90,11 @@
 <img src="tbc-logo.png" alt="The Blathering Live Logo" class="hero-logo">
 
 <div class="container">
-    <div id="accessDenied" class="hidden">
-        <h2 style="color: #ef4444;">Access Denied</h2>
-        <p class="subtitle">This page is only accessible via the unique link provided after tipping Ken on PayPal!</p>
-    </div>
-
-    <div id="mailbagForm" class="hidden">
-        <h2>Submit to the Blathering Mailbag!</h2>
-        <p class="subtitle">Record or upload an audio file to hear on the show!</p>
-        
-        <form id="uploadForm">
-            <div class="form-group">
-                <label for="viewerName">Your Name / Handle</label>
-                <input type="text" id="viewerName" required placeholder="e.g., JarJarDrinks">
-            </div>
-
-            <div class="form-group">
-                <label>Option 1: Record Right Now</label>
-                <div class="record-box">
-                    <button type="button" id="recordBtn" class="btn-record">🎙️ Start Recording</button>
-                    <div id="recordTimer" class="hidden" style="color: var(--text-muted); font-size: 0.85rem;">0:00</div>
-                    <audio id="audioPreview" controls class="hidden"></audio>
-                </div>
-            </div>
-
-            <div class="option-divider">— OR —</div>
-
-            <div class="form-group">
-                <label for="fileInput">Option 2: Upload an Audio File</label>
-                <input type="file" id="fileInput" accept="audio/*">
-            </div>
-
-            <div class="form-group">
-                <label for="producerNotes">Other instructions for Producer Steve</label>
-                <textarea id="producerNotes" placeholder="Any context, pronounciation or notes for Producer Steve? (not required)"></textarea>
-            </div>
-
-            <div style="display:none !important; visibility:hidden !important;">
-                <input type="text" id="honeypot_field" autocomplete="off" tabindex="-1">
-            </div>
-
-            <button type="submit" id="submitBtn" class="btn-primary" disabled>Send Message to Drive</button>
-        </form>
-        <div id="statusMessage"></div>
-    </div>
+    <a href="YOUR_YOUTUBE_LINK_HERE" target="_blank" class="btn-link">📺 The Blathering on YouTube</a>
+    <a href="YOUR_PATREON_LINK_HERE" target="_blank" class="btn-link btn-patreon">🧡 Support Ken on Patreon</a>
+    <a href="YOUR_GAMING_CHANNEL_LINK_HERE" target="_blank" class="btn-link">🎮 Blathering Gaming Channel</a>
+    <a href="YOUR_LINKTREE_LINK_HERE" target="_blank" class="btn-link" style="background-color: #475569;">🔗 More Links</a>
 </div>
-
-<script>
-    // --- CONFIGURATION ---
-    // 1. Put your active key here (change this show-to-show)
-    const ACTIVE_SHOW_KEY = "blatherpack69"; 
-    
-    // 2. Paste your Google Apps Script Web App URL here
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBtjIKMtAmfR3WAEKey3kspLG0XR16Beml48OztrDkML3aOut1SsTeAySH9Ba0YGwI/exec";
-
-    // --- ACCESS CONTROL CHECK ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const providedKey = urlParams.get('key');
-
-    if (providedKey === ACTIVE_SHOW_KEY) {
-        document.getElementById('mailbagForm').classList.remove('hidden');
-    } else {
-        document.getElementById('accessDenied').classList.remove('hidden');
-    }
-
-    // --- AUDIO RECORDING LOGIC ---
-    let mediaRecorder;
-    let audioChunks = [];
-    let recordedBlob = null;
-    let timerInterval;
-    const recordBtn = document.getElementById('recordBtn');
-    const audioPreview = document.getElementById('audioPreview');
-    const fileInput = document.getElementById('fileInput');
-    const submitBtn = document.getElementById('submitBtn');
-    const recordTimer = document.getElementById('recordTimer');
-
-    recordBtn.addEventListener('click', async () => {
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop();
-            clearInterval(timerInterval);
-            recordBtn.textContent = "🎙️ Re-record";
-            recordBtn.classList.remove('recording');
-            recordTimer.classList.add('hidden');
-        } else {
-            audioChunks = [];
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-    audio: {
-        channelCount: 1,
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false
-    } 
-});
-                mediaRecorder = new MediaRecorder(stream);
-                
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = () => {
-                    recordedBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    const audioUrl = URL.createObjectURL(recordedBlob);
-                    audioPreview.src = audioUrl;
-                    audioPreview.classList.remove('hidden');
-                    fileInput.value = ""; // Clear file choice if they recorded fresh
-                    validateForm();
-                };
-
-                mediaRecorder.start();
-                recordBtn.textContent = "⏹️ Stop Recording";
-                recordBtn.classList.add('recording');
-                
-                // Simple timer UI
-                recordTimer.classList.remove('hidden');
-                let seconds = 0;
-                recordTimer.textContent = "0:00";
-                timerInterval = setInterval(() => {
-                    seconds++;
-                    let mins = Math.floor(seconds / 60);
-                    let secs = seconds % 60;
-                    recordTimer.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                }, 1000);
-
-            } catch (err) {
-                alert("Microphone access denied or not supported by your browser.");
-                console.error(err);
-            }
-        }
-    });
-
-    // Form validation toggle
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            recordedBlob = null; // Clear recorded chunk if they pick a file instead
-            audioPreview.classList.add('hidden');
-            audioPreview.src = "";
-            recordBtn.textContent = "🎙️ Start Recording";
-        }
-        validateForm();
-    });
-
-    function validateForm() {
-        if (recordedBlob || fileInput.files.length > 0) {
-            submitBtn.disabled = false;
-        } else {
-            submitBtn.disabled = true;
-        }
-    }
-
-    // --- FORM SUBMISSION & BASE64 CONVERSION ---
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Check honeypot field
-        const honey = document.getElementById('honeypot_field').value;
-        if (honey) {
-            console.warn("Bot detected via honeypot.");
-            // Pretend it worked so the bot thinks it succeeded, but stop execution
-            document.getElementById('statusMessage').style.color = "#10b981";
-            document.getElementById('statusMessage').textContent = "🚀 Message sent successfully! Check out the show!";
-            document.getElementById('uploadForm').reset();
-            return;
-        }
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Uploading... Please wait.";
-        const statusDiv = document.getElementById('statusMessage');
-        statusDiv.style.color = "var(--text-muted)";
-        statusDiv.textContent = "Processing audio file...";
-
-        let finalBlob = recordedBlob;
-        let mimeType = "audio/mp3";
-
-        if (fileInput.files.length > 0) {
-            finalBlob = fileInput.files[0];
-            mimeType = finalBlob.type;
-        }
-
-        // Convert file to Base64 so it can pass through the Google Script JSON payload
-        const reader = new FileReader();
-        reader.readAsDataURL(finalBlob);
-        reader.onloadend = async () => {
-            const base64Data = reader.result.split(',')[1]; // Strip out the Data URL header
-            
-            const payload = {
-                name: document.getElementById('viewerName').value,
-                notes: document.getElementById('producerNotes').value,
-                mimeType: mimeType,
-                audioBase64: base64Data
-            };
-
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Essential for basic Google Script execution
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                // With no-cors, we can't reliably read the JSON response back, 
-                // but a successful transmission moves to the next block.
-                statusDiv.style.color = "#10b981";
-                statusDiv.textContent = "🚀 Message sent successfully! Check out the show!";
-                document.getElementById('uploadForm').reset();
-                audioPreview.classList.add('hidden');
-                recordedBlob = null;
-                submitBtn.textContent = "Send Message to Drive";
-            } catch (error) {
-                statusDiv.style.color = "#ef4444";
-                statusDiv.textContent = "Error sending message. Please try again.";
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Send Message to the Blathering Mailbag";
-                console.error(error);
-            }
-        };
-    });
-</script>
 
 </body>
 </html>
