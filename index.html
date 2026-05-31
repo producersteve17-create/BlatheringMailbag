@@ -55,7 +55,7 @@
             border-top: 3px solid #22c55e; 
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 15px; /* Default spacing between buttons */
         }
         
         .btn-link {
@@ -76,12 +76,20 @@
             background-color: var(--accent-hover);
         }
         
-        /* Optional: Giving the Patreon button a slightly different color if you want it to stand out */
         .btn-patreon {
-            background-color: #f96854; /* Patreon Brand Orange */
+            background-color: #f96854; 
         }
         .btn-patreon:hover {
             background-color: #e05b49;
+        }
+        
+        /* Special styling to separate the top voicemail button */
+        .btn-voicemail {
+            background-color: #10b981; /* Matches your success/green theme */
+            margin-bottom: 15px; /* Adds extra separation from the rest of the list */
+        }
+        .btn-voicemail:hover {
+            background-color: #059669;
         }
     </style>
 </head>
@@ -90,6 +98,10 @@
 <img src="tbc-logo.png" alt="The Blathering Live Logo" class="hero-logo">
 
 <div class="container">
+    <!-- New separated Voicemail button -->
+    <a href="/voicemail" class="btn-link btn-voicemail">🎤 Blathering Voicemail</a>
+
+    <!-- The rest of the link tree -->
     <a href="https://www.youtube.com/@KenNapzok" target="_blank" class="btn-link">📺 The Blathering on YouTube</a>
     <a href="https://www.patreon.com/cw/KenNapzok" target="_blank" class="btn-link btn-patreon">🧡 Support Ken on Patreon</a>
     <a href="https://www.youtube.com/@BlatheringGaming" target="_blank" class="btn-link">🎮 Blathering Gaming Channel</a>
