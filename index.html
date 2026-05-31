@@ -102,7 +102,27 @@
         .btn-voicemail:hover {
             background-color: #059669;
         }
-    </style>
+   /* New layout for the side-by-side live boxes */
+        .live-boxes-wrapper {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .live-box {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            flex: 1; /* This makes both boxes take up exactly 50% of the space */
+            text-align: center;
+            font-size: 0.9em;
+            line-height: 1.4;
+            border: 2px solid var(--text-muted); /* Gives it a distinct box look */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        } </style>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -122,6 +142,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="https://www.youtube.com/@BlatheringGaming" id="track-youtube-gaming" target="_blank" class="btn-link">Blathering Gaming Channel</a>
     <a href="https://linktr.ee/morningdrivemedia" id="track-more-links" target="_blank" class="btn-link" style="background-color: #475569;">More Links</a>
 </div>
+</div>
 
+<div class="live-boxes-wrapper">
+    <div id="live-box-main" class="live-box">
+        The Blathering Live - Every Monday, Thursday and sometimes Saturday
+    </div>
+    <div id="live-box-gaming" class="live-box">
+        Check Discord or Producer Steve on Bluesky for stream schedules!
+    </div>
+</div>
 </body>
 </html>
