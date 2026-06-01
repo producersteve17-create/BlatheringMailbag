@@ -21,8 +21,8 @@
             --neon-green: rgba(34, 197, 94, 0.5);
         }
         body {
-            /* Changed to Lilita One */
             font-family: 'Lilita One', sans-serif;
+            font-size: 18px; /* Increased base font size */
             background: linear-gradient(135deg, #0b0f19 0%, #0f172a 100%);
             color: var(--text-main);
             display: flex;
@@ -34,7 +34,7 @@
             padding: 20px;
             gap: 30px;
             
-            /* Added subtle black outline to text */
+            /* Subtle black outline to text */
             -webkit-text-stroke: 0.5px #000;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
@@ -56,23 +56,24 @@
 
         .container {
             background-color: var(--card-bg);
-            padding: 30px;
+            padding: 35px 30px; /* Added a bit more vertical padding */
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             width: 100%;
-            max-width: 450px;
+            max-width: 480px; /* Widened slightly to accommodate larger buttons */
             position: relative;
             z-index: 5;
             border-top: 3px solid #22c55e; 
             display: flex;
             flex-direction: column;
-            gap: 15px; /* Default spacing between buttons */
+            gap: 18px; /* Increased spacing between buttons */
         }
         
         .btn-link {
             display: block;
             width: 100%;
-            padding: 15px;
+            padding: 18px; /* Increased from 15px for taller, chunkier buttons */
+            font-size: 22px; /* Explicitly increased button text size */
             background-color: var(--accent);
             color: white;
             text-decoration: none;
@@ -81,6 +82,7 @@
             font-weight: bold;
             box-sizing: border-box;
             transition: background 0.2s;
+            letter-spacing: 0.5px; /* Slight letter spacing for better readability */
         }
 
         .btn-link:hover {
@@ -96,31 +98,32 @@
         
         /* Special styling to separate the top voicemail button */
         .btn-voicemail {
-            background-color: #10b981; /* Matches your success/green theme */
-            margin-bottom: 15px; /* Adds extra separation from the rest of the list */
+            background-color: #10b981;
+            margin-bottom: 15px; 
+            font-size: 24px; /* Making the main call to action slightly larger */
         }
         .btn-voicemail:hover {
             background-color: #059669;
         }
         
-        /* New layout for the side-by-side live boxes */
+        /* Layout for the side-by-side live boxes */
         .live-boxes-wrapper {
             display: flex;
             gap: 15px;
             width: 100%;
-            max-width: 450px;
+            max-width: 480px; /* Match new container width */
         }
 
         .live-box {
             background-color: var(--card-bg);
             border-radius: 12px;
-            padding: 25px 20px; /* Increased padding for larger size */
-            min-height: 120px; /* Added min-height for chunkier boxes */
-            flex: 1; /* This makes both boxes take up exactly 50% of the space */
+            padding: 25px 20px; 
+            min-height: 120px; 
+            flex: 1; 
             text-align: center;
-            font-size: 0.9em;
+            font-size: 1.2em; /* Increased text size from 0.9em */
             line-height: 1.4;
-            border: 2px solid var(--text-muted); /* Gives it a distinct box look */
+            border: 2px solid var(--text-muted); 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -134,7 +137,6 @@
         
         /* Specific IDs for the background images and overlays */
         #live-box-main {
-            /* Stacks a dark, 85% opacity overlay right on top of the image */
             background-image: linear-gradient(rgba(30, 41, 59, 0.85), rgba(30, 41, 59, 0.85)), url('tbc-logo.png');
         }
 
