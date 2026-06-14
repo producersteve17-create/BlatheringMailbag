@@ -171,72 +171,79 @@
     const recordTimer = document.getElementById('recordTimer');
 
         recordBtn.addEventListener('click', async () => {
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            // --- STOP LOGIC ---
-            if (wakeLock !== null) {
-                wakeLock.release();
-                wakeLock = null;
-            }
-            mediaRecorder.stop();
-            clearInterval(timerInterval);
-            recordBtn.textContent = "🎙️ Re-record";
-            recordBtn.classList.remove('recording');
-            recordTimer.classList.add('hidden');
-        } else {
-            // --- START LOGIC ---
-            audioChunks = [];
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        channelCount: 1,
-                        echoCancellation: false,
-                        noiseSuppression: false,
-                        autoGainControl: false
-                    } 
-                });
-                mediaRecorder = new MediaRecorder(stream);
-                
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = () => {
-                    recordedBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    const audioUrl = URL.createObjectURL(recordedBlob);
-                    audioPreview.src = audioUrl;
-                    audioPreview.classList.remove('hidden');
-                    fileInput.value = ""; 
-                    validateForm();
-                };
-
-                // Request Wake Lock before starting the recorder
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen-lock');
-                }
-
-                mediaRecorder.start();
-                recordBtn.textContent = "⏹️ Stop Recording";
-                recordBtn.classList.add('recording');
-                
-                recordTimer.classList.remove('hidden');
-                let seconds = 0;
-                recordTimer.textContent = "0:00";
-                timerInterval = setInterval(() => {
-                    seconds++;
-                    let mins = Math.floor(seconds / 60);
-                    let secs = seconds % 60;
-                    recordTimer.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                }, 1000);
-
-            } catch (err) {
-                // If wakeLock fails or mic fails, alert the user
-                if (err_name === 'NotAllowedError') {
-                    alert("Microphone access denied or not supported by your browser.");
-                }
-                console.error(err);
-            }
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        // --- STOP LOGIC ---
+        if (wakeLock !== null) {
+            await wakeLock.release(); // WakeLock release returns a promise
+            wakeLock = null;
         }
-    });
+        mediaRecorder.stop();
+        clearInterval(timerInterval);
+        recordBtn.textContent = "🎙️ Re-record";
+        recordBtn.classList.remove('recording');
+        recordTimer.classList.add('hidden');
+    } else {
+        // --- START LOGIC ---
+        audioChunks = [];
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    channelCount: 1,
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                } 
+            });
+            mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                recordedBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const audioUrl = URL.createObjectURL(recordedBlob);
+                audioPreview.src = audioUrl;
+                audioPreview.classList.remove('hidden');
+                fileInput.value = ""; 
+                validateForm();
+            };
+
+            // Request Wake Lock before starting the recorder 
+            // FIXED: Changing 'screen-lock' to the standard 'screen'
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (wakeError) {
+                    console.warn("Wake lock request failed, but continuing recording:", wakeError);
+                }
+            }
+
+            mediaRecorder.start();
+            recordBtn.textContent = "⏹️ Stop Recording";
+            recordBtn.classList.add('recording');
+            
+            recordTimer.classList.remove('hidden');
+            let seconds = 0;
+            recordTimer.textContent = "0:00";
+            timerInterval = setInterval(() => {
+                seconds++;
+                let mins = Math.floor(seconds / 60);
+                let secs = seconds % 60;
+                recordTimer.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }, 1000);
+
+        } catch (err) {
+            // FIXED: Using standard err.name property syntax
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                alert("Microphone access denied or not supported by your browser.");
+            } else {
+                alert("An error occurred trying to record. Please ensure your browser supports audio recording.");
+            }
+            console.error(err);
+        }
+    }
+});
 
 
     fileInput.addEventListener('change', () => {
