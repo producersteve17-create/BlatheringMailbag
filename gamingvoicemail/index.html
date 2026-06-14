@@ -162,20 +162,28 @@
     let audioChunks = [];
     let recordedBlob = null;
     let timerInterval;
+    let wakeLock = null; // screen lock api - thanks brady
+
     const recordBtn = document.getElementById('recordBtn');
     const audioPreview = document.getElementById('audioPreview');
     const fileInput = document.getElementById('fileInput');
     const submitBtn = document.getElementById('submitBtn');
     const recordTimer = document.getElementById('recordTimer');
 
-    recordBtn.addEventListener('click', async () => {
+        recordBtn.addEventListener('click', async () => {
         if (mediaRecorder && mediaRecorder.state === "recording") {
+            // --- STOP LOGIC ---
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
             mediaRecorder.stop();
             clearInterval(timerInterval);
             recordBtn.textContent = "🎙️ Re-record";
             recordBtn.classList.remove('recording');
             recordTimer.classList.add('hidden');
         } else {
+            // --- START LOGIC ---
             audioChunks = [];
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -201,6 +209,11 @@
                     validateForm();
                 };
 
+                // Request Wake Lock before starting the recorder
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen-lock');
+                }
+
                 mediaRecorder.start();
                 recordBtn.textContent = "⏹️ Stop Recording";
                 recordBtn.classList.add('recording');
@@ -216,11 +229,15 @@
                 }, 1000);
 
             } catch (err) {
-                alert("Microphone access denied or not supported by your browser.");
+                // If wakeLock fails or mic fails, alert the user
+                if (err_name === 'NotAllowedError') {
+                    alert("Microphone access denied or not supported by your browser.");
+                }
                 console.error(err);
             }
         }
     });
+
 
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length > 0) {
