@@ -177,6 +177,8 @@
     let audioChunks = [];
     let recordedBlob = null;
     let timerInterval;
+    let wakeLock = null; // Screen wake lock API persistence variable
+
     const recordBtn = document.getElementById('recordBtn');
     const audioPreview = document.getElementById('audioPreview');
     const fileInput = document.getElementById('fileInput');
@@ -185,12 +187,22 @@
 
     recordBtn.addEventListener('click', async () => {
         if (mediaRecorder && mediaRecorder.state === "recording") {
+            // --- STOP LOGIC ---
+            if (wakeLock !== null) {
+                try {
+                    await wakeLock.release();
+                } catch (releaseError) {
+                    console.error("Error releasing wake lock:", releaseError);
+                }
+                wakeLock = null;
+            }
             mediaRecorder.stop();
             clearInterval(timerInterval);
             recordBtn.textContent = "🎙️ Re-record";
             recordBtn.classList.remove('recording');
             recordTimer.classList.add('hidden');
         } else {
+            // --- START LOGIC ---
             audioChunks = [];
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -216,6 +228,15 @@
                     validateForm();
                 };
 
+                // Request Wake Lock using the standard 'screen' attribute before recording starts
+                if ('wakeLock' in navigator) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    } catch (wakeError) {
+                        console.warn("Wake lock failed to engage, continuing with recording execution:", wakeError);
+                    }
+                }
+
                 mediaRecorder.start();
                 recordBtn.textContent = "⏹️ Stop Recording";
                 recordBtn.classList.add('recording');
@@ -231,7 +252,11 @@
                 }, 1000);
 
             } catch (err) {
-                alert("Microphone access denied or not supported by your browser.");
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    alert("Microphone access denied or not supported by your browser.");
+                } else {
+                    alert("An error occurred trying to record. Please ensure your browser supports audio recording.");
+                }
                 console.error(err);
             }
         }
