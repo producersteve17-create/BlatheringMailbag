@@ -331,6 +331,10 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+
                 localStorage.setItem('lastMailbagSub', Date.now()); // Set cooldown timestamp
                 statusDiv.style.color = "#10b981";
                 statusDiv.textContent = "🚀 Message sent successfully! Check out the show!";
@@ -343,7 +347,7 @@
                 statusDiv.textContent = "Error sending message. Please try again.";
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Send Message to the Blathering Mailbag";
-                console.error(error);
+                console.error("Mailbag Submission Error:", error);
             }
         };
     });
