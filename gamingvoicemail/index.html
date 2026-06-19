@@ -327,7 +327,8 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    // Changed to text/plain to bypass CORS preflight blocks
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
@@ -343,6 +344,7 @@
                 recordedBlob = null;
                 submitBtn.textContent = "Send Message to Drive";
             } catch (error) {
+                // ... (rest of the catch block remains the same)
                 statusDiv.style.color = "#ef4444";
                 statusDiv.textContent = "Error sending message. Please try again.";
                 submitBtn.disabled = false;
