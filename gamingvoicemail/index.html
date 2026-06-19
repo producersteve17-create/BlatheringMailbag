@@ -286,7 +286,7 @@
         const now = Date.now();
         if (lastSubmission && (now - lastSubmission < 60000)) { // 1 minute window
             statusDiv.style.color = "#ef4444";
-            statusDiv.textContent = "Slow down, speed racer! Please wait a minute before sending another message.";
+            statusDiv.textContent = "No! Anakin! Please wait a minute before sending another message.";
             return;
         }
         
@@ -294,7 +294,7 @@
         if (honey) {
             console.warn("Bot detected via honeypot.");
             statusDiv.style.color = "#10b981";
-            statusDiv.textContent = "🚀 Message sent successfully! Check out the show!";
+            statusDiv.textContent = "Message sent successfully! Check out the show!";
             document.getElementById('uploadForm').reset();
             return;
         }
@@ -338,7 +338,7 @@
 
                 localStorage.setItem('lastMailbagSub', Date.now()); // Set cooldown timestamp
                 statusDiv.style.color = "#10b981";
-                statusDiv.textContent = "🚀 Message sent successfully! Check out the show!";
+                statusDiv.textContent = "Message sent successfully! Check out the show!";
                 document.getElementById('uploadForm').reset();
                 audioPreview.classList.add('hidden');
                 recordedBlob = null;
