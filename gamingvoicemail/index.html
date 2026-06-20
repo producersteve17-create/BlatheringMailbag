@@ -201,7 +201,7 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    recordedBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                     
                     if (recordedBlob.size > MAX_FILE_SIZE_BYTES) {
                         alert("That recording is a bit too beefy! Please keep messages under 10MB.");
@@ -305,7 +305,7 @@
         statusDiv.textContent = "Processing audio file...";
 
         let finalBlob = recordedBlob;
-        let mimeType = "audio/mp3";
+        let mimeType = recordedBlob ? recordedBlob.type : "";
 
         if (fileInput.files.length > 0) {
             finalBlob = fileInput.files[0];
