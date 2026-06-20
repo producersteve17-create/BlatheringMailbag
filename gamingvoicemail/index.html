@@ -154,9 +154,9 @@
 
 <script>
     // --- CONFIGURATION ---
-    const SERVER_AUTH_KEY = "blatherpack69"; // Required to pass the new backend security
+    const SERVER_AUTH_KEY = "blatherpack69"; 
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBtjIKMtAmfR3WAEKey3kspLG0XR16Beml48OztrDkML3aOut1SsTeAySH9Ba0YGwI/exec";
-    const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB limit protection
+    const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; 
 
     // --- AUDIO RECORDING LOGIC ---
     let mediaRecorder;
@@ -239,7 +239,6 @@
                 let seconds = 0;
                 recordTimer.textContent = "0:00";
                 
-                // FIX: Clear interval ghost before starting a new one
                 clearInterval(timerInterval);
                 timerInterval = setInterval(() => {
                     seconds++;
@@ -289,10 +288,9 @@
         
         const statusDiv = document.getElementById('statusMessage');
         
-        // --- FRONTEND RATE LIMITING PROTOCOL ---
         const lastSubmission = localStorage.getItem('lastMailbagSub');
         const now = Date.now();
-        if (lastSubmission && (now - lastSubmission < 60000)) { // 1 minute window
+        if (lastSubmission && (now - lastSubmission < 60000)) { 
             statusDiv.style.color = "#ef4444";
             statusDiv.textContent = "No! Anakin! Please wait a minute before sending another message.";
             return;
@@ -323,21 +321,22 @@
         const reader = new FileReader();
         reader.readAsDataURL(finalBlob);
         
-        // FIX: Change onloadend to onload so corrupted files don't crash the script
         reader.onload = async () => {
             const base64Data = reader.result.split(',')[1]; 
             
+            // FRONTEND FIX: Clean the mime type right here before it gets sent
+            const cleanMimeType = (mimeType || "").split(';')[0].toLowerCase();
+            
             const payload = {
-                authKey: SERVER_AUTH_KEY, // Silently pass the key to satisfy the backend
+                authKey: SERVER_AUTH_KEY, 
                 name: "[GAMING] - " + document.getElementById('viewerName').value,
                 notes: document.getElementById('producerNotes').value,
-                mimeType: mimeType,
+                mimeType: cleanMimeType, 
                 audioBase64: base64Data
             };
 
-            // FIX: Add AbortController to prevent infinite hanging on bad connections
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -353,15 +352,18 @@
                     throw new Error(`Server responded with network status ${response.status}`);
                 }
 
-                // NEW: Actually parse the JSON returned by your Google Script
-                const responseData = await response.json();
+                // FRONTEND FIX: Safely parse JSON to catch Google HTML error pages
+                let responseData;
+                try {
+                    responseData = await response.json();
+                } catch (parseError) {
+                    throw new Error("Invalid response from server. Double check Apps Script execution permissions.");
+                }
 
                 if (responseData.status === "error") {
-                    // If your script threw a custom error (like file size or mime type)
                     throw new Error(responseData.message);
                 }
 
-                // If we get here, it actually succeeded on the backend
                 localStorage.setItem('lastMailbagSub', Date.now()); 
                 statusDiv.style.color = "#10b981";
                 statusDiv.textContent = "Message sent successfully! Check out the show!";
@@ -375,11 +377,10 @@
                 if (error.name === 'AbortError') {
                     statusDiv.textContent = "Upload timed out. Your connection might be too slow.";
                 } else {
-                    // NEW: Print the actual error message from the backend so you can debug it
                     statusDiv.textContent = "Error: " + error.message;
                 }
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Send Message to the Blathering Mailbag";
+                submitBtn.textContent = "Send Message to Drive";
                 console.error("Mailbag Submission Error:", error);
             }
         };
