@@ -178,7 +178,7 @@
     let audioChunks = [];
     let recordedBlob = null;
     let timerInterval;
-    let wakeLock = null; // Screen wake lock API persistence variable
+    let wakeLock = null; 
 
     const recordBtn = document.getElementById('recordBtn');
     const audioPreview = document.getElementById('audioPreview');
@@ -221,7 +221,6 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    // FIX: Automatically use the browser's native recording format
                     recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                     
                     if (recordedBlob.size > MAX_FILE_SIZE_BYTES) {
@@ -239,7 +238,6 @@
                     validateForm();
                 };
 
-                // Request Wake Lock using the standard 'screen' attribute before recording starts
                 if ('wakeLock' in navigator) {
                     try {
                         wakeLock = await navigator.wakeLock.request('screen');
@@ -256,7 +254,6 @@
                 let seconds = 0;
                 recordTimer.textContent = "0:00";
                 
-                // FIX: Clear interval ghost before starting a new one
                 clearInterval(timerInterval);
                 timerInterval = setInterval(() => {
                     seconds++;
@@ -306,10 +303,9 @@
         
         const statusDiv = document.getElementById('statusMessage');
         
-        // --- FRONTEND RATE LIMITING PROTOCOL ---
         const lastSubmission = localStorage.getItem('lastMailbagSub');
         const now = Date.now();
-        if (lastSubmission && (now - lastSubmission < 60000)) { // 1 minute window
+        if (lastSubmission && (now - lastSubmission < 60000)) { 
             statusDiv.style.color = "#ef4444";
             statusDiv.textContent = "Anakin! No! Please wait a minute before sending another message.";
             return;
@@ -330,7 +326,6 @@
         statusDiv.textContent = "Processing audio file...";
 
         let finalBlob = recordedBlob;
-        // FIX: Pull the actual MIME type of the recorded blob dynamically
         let mimeType = recordedBlob ? recordedBlob.type : "";
 
         if (fileInput.files.length > 0) {
@@ -341,53 +336,67 @@
         const reader = new FileReader();
         reader.readAsDataURL(finalBlob);
         
-        // FIX: Change onloadend to onload so corrupted files don't crash the script
         reader.onload = async () => {
             const base64Data = reader.result.split(',')[1]; 
             
-            // FIX: Append the authKey to the payload so the backend can verify it
+            // FRONTEND FIX 1: Clean the mime type right here before it gets sent
+            const cleanMimeType = (mimeType || "").split(';')[0].toLowerCase();
+            
             const payload = {
-                authKey: providedKey,
+                authKey: providedKey, // Preserving your URL parameter logic
                 name: document.getElementById('viewerName').value,
                 notes: document.getElementById('producerNotes').value,
-                mimeType: mimeType,
+                mimeType: cleanMimeType, 
                 audioBase64: base64Data
             };
 
-            // FIX: Add AbortController to prevent infinite hanging on bad connections
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload),
-                    signal: controller.signal // Apply the timeout kill switch
+                    signal: controller.signal 
                 });
 
-                clearTimeout(timeoutId); // Clear the timeout if the request succeeds
+                clearTimeout(timeoutId); 
 
                 if (!response.ok) {
-                    throw new Error(`Server responded with status ${response.status}`);
+                    throw new Error(`Server responded with network status ${response.status}`);
                 }
 
-                localStorage.setItem('lastMailbagSub', Date.now()); // Set cooldown timestamp
+                // FRONTEND FIX 2: Safely parse JSON to catch Google errors properly
+                let responseData;
+                try {
+                    responseData = await response.json();
+                } catch (parseError) {
+                    throw new Error("Invalid response from server. Double check Apps Script execution permissions.");
+                }
+
+                if (responseData.status === "error") {
+                    throw new Error(responseData.message);
+                }
+
+                // Success State
+                localStorage.setItem('lastMailbagSub', Date.now()); 
                 statusDiv.style.color = "#10b981";
                 statusDiv.textContent = "Message sent successfully! Check out the show!";
                 document.getElementById('uploadForm').reset();
                 audioPreview.classList.add('hidden');
                 recordedBlob = null;
                 submitBtn.textContent = "Send Message to Drive";
+
             } catch (error) {
                 statusDiv.style.color = "#ef4444";
                 if (error.name === 'AbortError') {
                     statusDiv.textContent = "Upload timed out. Your connection might be too slow.";
                 } else {
-                    statusDiv.textContent = "Error sending message. Please try again.";
+                    statusDiv.textContent = "Error: " + error.message;
                 }
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Send Message to the Blathering Mailbag";
+                submitBtn.textContent = "Send Message to Drive";
                 console.error("Mailbag Submission Error:", error);
             }
         };
