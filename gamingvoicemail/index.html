@@ -154,6 +154,7 @@
 
 <script>
     // --- CONFIGURATION ---
+    const SERVER_AUTH_KEY = "blatherpack69"; // Required to pass the new backend security
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBtjIKMtAmfR3WAEKey3kspLG0XR16Beml48OztrDkML3aOut1SsTeAySH9Ba0YGwI/exec";
     const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB limit protection
 
@@ -174,7 +175,11 @@
         if (mediaRecorder && mediaRecorder.state === "recording") {
             // --- STOP LOGIC ---
             if (wakeLock !== null) {
-                await wakeLock.release(); 
+                try {
+                    await wakeLock.release(); 
+                } catch (releaseError) {
+                    console.error("Error releasing wake lock:", releaseError);
+                }
                 wakeLock = null;
             }
             mediaRecorder.stop();
@@ -233,6 +238,9 @@
                 recordTimer.classList.remove('hidden');
                 let seconds = 0;
                 recordTimer.textContent = "0:00";
+                
+                // FIX: Clear interval ghost before starting a new one
+                clearInterval(timerInterval);
                 timerInterval = setInterval(() => {
                     seconds++;
                     let mins = Math.floor(seconds / 60);
@@ -314,23 +322,32 @@
 
         const reader = new FileReader();
         reader.readAsDataURL(finalBlob);
-        reader.onloadend = async () => {
+        
+        // FIX: Change onloadend to onload so corrupted files don't crash the script
+        reader.onload = async () => {
             const base64Data = reader.result.split(',')[1]; 
             
             const payload = {
+                authKey: SERVER_AUTH_KEY, // Silently pass the key to satisfy the backend
                 name: "[GAMING] - " + document.getElementById('viewerName').value,
                 notes: document.getElementById('producerNotes').value,
                 mimeType: mimeType,
                 audioBase64: base64Data
             };
 
+            // FIX: Add AbortController to prevent infinite hanging on bad connections
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    // Changed to text/plain to bypass CORS preflight blocks
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    signal: controller.signal // Apply the timeout kill switch
                 });
+
+                clearTimeout(timeoutId); // Clear the timeout if the request succeeds
 
                 if (!response.ok) {
                     throw new Error(`Server responded with status ${response.status}`);
@@ -344,9 +361,12 @@
                 recordedBlob = null;
                 submitBtn.textContent = "Send Message to Drive";
             } catch (error) {
-                // ... (rest of the catch block remains the same)
                 statusDiv.style.color = "#ef4444";
-                statusDiv.textContent = "Error sending message. Please try again.";
+                if (error.name === 'AbortError') {
+                    statusDiv.textContent = "Upload timed out. Your connection might be too slow.";
+                } else {
+                    statusDiv.textContent = "Error sending message. Please try again.";
+                }
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Send Message to the Blathering Mailbag";
                 console.error("Mailbag Submission Error:", error);
