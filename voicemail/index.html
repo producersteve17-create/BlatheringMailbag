@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Blathering - Mailbag Segment</title>
+    <!-- LameJS for client-side MP3 encoding -->
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -173,6 +175,57 @@
         document.getElementById('accessDenied').classList.remove('hidden');
     }
 
+    // --- HELPER: RESAMPLE & CONVERT AUDIO TO MP3 ---
+    async function encodeAudioToMp3(rawBlob) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await rawBlob.arrayBuffer();
+        const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+        // Standardize sample rate to 44.1 kHz mono for broad compatibility
+        const targetSampleRate = 44100;
+        const offlineCtx = new OfflineAudioContext(
+            1, 
+            Math.ceil(originalAudioBuffer.duration * targetSampleRate), 
+            targetSampleRate
+        );
+
+        const source = offlineCtx.createBufferSource();
+        source.buffer = originalAudioBuffer;
+        source.connect(offlineCtx.destination);
+        source.start(0);
+
+        const resampledBuffer = await offlineCtx.startRendering();
+        const channelData = resampledBuffer.getChannelData(0);
+
+        const kbps = 128;
+        const mp3encoder = new lamejs.Mp3Encoder(1, targetSampleRate, kbps);
+        const mp3Data = [];
+
+        // Convert 32-bit float audio samples to 16-bit signed PCM
+        const samples = new Int16Array(channelData.length);
+        for (let i = 0; i < channelData.length; i++) {
+            let s = Math.max(-1, Math.min(1, channelData[i]));
+            samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+
+        // Process PCM samples into MP3 blocks
+        const sampleBlockSize = 1152;
+        for (let i = 0; i < samples.length; i += sampleBlockSize) {
+            const sampleChunk = samples.subarray(i, i + sampleBlockSize);
+            const mp3buf = mp3encoder.encodeBuffer(sampleChunk);
+            if (mp3buf.length > 0) {
+                mp3Data.push(mp3buf);
+            }
+        }
+
+        const mp3buf = mp3encoder.flush();
+        if (mp3buf.length > 0) {
+            mp3Data.push(mp3buf);
+        }
+
+        return new Blob(mp3Data, { type: 'audio/mp3' });
+    }
+
     // --- AUDIO RECORDING LOGIC ---
     let mediaRecorder;
     let audioChunks = [];
@@ -326,80 +379,89 @@
         statusDiv.textContent = "Processing audio file...";
 
         let finalBlob = recordedBlob;
-        let mimeType = recordedBlob ? recordedBlob.type : "";
+        let mimeType = "audio/mp3";
 
-        if (fileInput.files.length > 0) {
-            finalBlob = fileInput.files[0];
-            mimeType = finalBlob.type;
-        }
-
-        const reader = new FileReader();
-        reader.readAsDataURL(finalBlob);
-        
-        reader.onload = async () => {
-            const base64Data = reader.result.split(',')[1]; 
-            
-            // FRONTEND FIX 1: Clean the mime type right here before it gets sent
-            const cleanMimeType = (mimeType || "").split(';')[0].toLowerCase();
-            
-            const payload = {
-                authKey: providedKey, // Preserving your URL parameter logic
-                name: document.getElementById('viewerName').value,
-                notes: document.getElementById('producerNotes').value,
-                mimeType: cleanMimeType, 
-                audioBase64: base64Data
-            };
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); 
-
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload),
-                    signal: controller.signal 
-                });
-
-                clearTimeout(timeoutId); 
-
-                if (!response.ok) {
-                    throw new Error(`Server responded with network status ${response.status}`);
-                }
-
-                // FRONTEND FIX 2: Safely parse JSON to catch Google errors properly
-                let responseData;
-                try {
-                    responseData = await response.json();
-                } catch (parseError) {
-                    throw new Error("Invalid response from server. Double check Apps Script execution permissions.");
-                }
-
-                if (responseData.status === "error") {
-                    throw new Error(responseData.message);
-                }
-
-                // Success State
-                localStorage.setItem('lastMailbagSub', Date.now()); 
-                statusDiv.style.color = "#10b981";
-                statusDiv.textContent = "Message sent successfully! Check out the show!";
-                document.getElementById('uploadForm').reset();
-                audioPreview.classList.add('hidden');
-                recordedBlob = null;
-                submitBtn.textContent = "Send Message to Drive";
-
-            } catch (error) {
-                statusDiv.style.color = "#ef4444";
-                if (error.name === 'AbortError') {
-                    statusDiv.textContent = "Upload timed out. Your connection might be too slow.";
-                } else {
-                    statusDiv.textContent = "Error: " + error.message;
-                }
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Send Message to Drive";
-                console.error("Mailbag Submission Error:", error);
+        try {
+            if (recordedBlob) {
+                statusDiv.textContent = "Converting audio to MP3...";
+                finalBlob = await encodeAudioToMp3(recordedBlob);
+                mimeType = "audio/mp3";
+            } else if (fileInput.files.length > 0) {
+                finalBlob = fileInput.files[0];
+                mimeType = finalBlob.type;
             }
-        };
+
+            const reader = new FileReader();
+            reader.readAsDataURL(finalBlob);
+            
+            reader.onload = async () => {
+                const base64Data = reader.result.split(',')[1]; 
+                const cleanMimeType = (mimeType || "").split(';')[0].toLowerCase();
+                
+                const payload = {
+                    authKey: providedKey,
+                    name: document.getElementById('viewerName').value,
+                    notes: document.getElementById('producerNotes').value,
+                    mimeType: cleanMimeType, 
+                    audioBase64: base64Data
+                };
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000); 
+
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload),
+                        signal: controller.signal 
+                    });
+
+                    clearTimeout(timeoutId); 
+
+                    if (!response.ok) {
+                        throw new Error(`Server responded with network status ${response.status}`);
+                    }
+
+                    let responseData;
+                    try {
+                        responseData = await response.json();
+                    } catch (parseError) {
+                        throw new Error("Invalid response from server. Double check Apps Script execution permissions.");
+                    }
+
+                    if (responseData.status === "error") {
+                        throw new Error(responseData.message);
+                    }
+
+                    // Success State
+                    localStorage.setItem('lastMailbagSub', Date.now()); 
+                    statusDiv.style.color = "#10b981";
+                    statusDiv.textContent = "Message sent successfully! Check out the show!";
+                    document.getElementById('uploadForm').reset();
+                    audioPreview.classList.add('hidden');
+                    recordedBlob = null;
+                    submitBtn.textContent = "Send Message to Drive";
+
+                } catch (error) {
+                    statusDiv.style.color = "#ef4444";
+                    if (error.name === 'AbortError') {
+                        statusDiv.textContent = "Upload timed out. Your connection might be too slow.";
+                    } else {
+                        statusDiv.textContent = "Error: " + error.message;
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Send Message to Drive";
+                    console.error("Mailbag Submission Error:", error);
+                }
+            };
+        } catch (encodingError) {
+            statusDiv.style.color = "#ef4444";
+            statusDiv.textContent = "Error processing MP3 audio. Please try again.";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send Message to Drive";
+            console.error("MP3 Conversion Error:", encodingError);
+        }
     });
 </script>
 
