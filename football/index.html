@@ -25,7 +25,7 @@
       border: 1px solid #2f2f35;
       border-radius: 12px;
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       padding: 36px 28px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
@@ -103,7 +103,7 @@
     }
     iframe {
       width: 100%;
-      height: 320px;
+      height: 140px;
       border: 1px solid #3f3f46;
       border-radius: 8px;
       background: #121214;
@@ -144,8 +144,6 @@
   </div>
 
   <script>
-    const ROOM_NAME = "theblatheringcallin";
-
     function connectCall() {
       const nameInput = document.getElementById('caller-name');
       const callerName = nameInput.value.trim() || 'Caller';
@@ -153,8 +151,7 @@
       const joinSection = document.getElementById('join-section');
       const iframe = document.getElementById('ninja-frame');
 
-      // Uses strict audio-only, disables camera tracks entirely, and gives adequate height
-      const targetUrl = `https://vdo.ninja/?room=${ROOM_NAME}&push&novideo&webcam=0&vd=0&ad=1&autostart&label=${encodeURIComponent(callerName)}`;
+      const targetUrl = `https://vdo.ninja/?room=theblatheringcallin&hash=c020&do&push&novideo&audioonly&autostart&label=${encodeURIComponent(callerName)}`;
 
       iframe.src = targetUrl;
       joinSection.style.display = 'none';
