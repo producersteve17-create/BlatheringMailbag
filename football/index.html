@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call In Live | The Blathering</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0e0e10;
+      color: #efeff1;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: #18181b;
+      border: 1px solid #2f2f35;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 460px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .badge {
+      display: inline-block;
+      background: #e91e63;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+    p {
+      font-size: 0.95rem;
+      color: #adadb8;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #dedee3;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #3f3f46;
+      background: #27272a;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: #9146ff;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      background: #9146ff;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    button:hover {
+      background: #772ce8;
+    }
+    .instructions {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: #71717a;
+    }
+    #ninja-container {
+      display: none;
+      margin-top: 20px;
+    }
+    iframe {
+      width: 100%;
+      height: 180px;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      background: #000;
+    }
+    .status-msg {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: #10b981;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="badge">Live Studio Line</div>
+    <h1>The Blathering Call-In</h1>
+    <p>Join the green room queue to speak live on stream. Headphones required to prevent audio echo.</p>
+
+    <div id="join-section">
+      <div class="form-group">
+        <label for="caller-name">Your Name / Handle</label>
+        <input type="text" id="caller-name" placeholder="e.g. FootballFan99" maxlength="24" autocomplete="off">
+      </div>
+      <button onclick="connectCall()">Join Call Queue</button>
+      <div class="instructions">You will be prompted to allow microphone access.</div>
+    </div>
+
+    <div id="ninja-container">
+      <iframe id="ninja-frame" allow="microphone; autoplay"></iframe>
+      <div class="status-msg">Connected to Lobby</div>
+      <div class="instructions" style="margin-top: 6px;">Stay on this page. The host will bring you on stage shortly.</div>
+    </div>
+  </div>
+
+  <script>
+    const ROOM_NAME = "theblatheringcallin";
+
+    function connectCall() {
+      const nameInput = document.getElementById('caller-name');
+      const callerName = nameInput.value.trim() || 'Caller';
+      const container = document.getElementById('ninja-container');
+      const joinSection = document.getElementById('join-section');
+      const iframe = document.getElementById('ninja-frame');
+
+      // VDO.Ninja audio-only push string
+      const targetUrl = `https://vdo.ninja/?room=${ROOM_NAME}&push&novideo&cleanoutput&label=${encodeURIComponent(callerName)}&autostart`;
+
+      iframe.src = targetUrl;
+      joinSection.style.display = 'none';
+      container.style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
