@@ -135,7 +135,7 @@
     <div id="ninja-container">
       <iframe 
         id="ninja-frame" 
-        allow="microphone *; speaker-selection *; autoplay *;" 
+        allow="microphone *; autoplay *;" 
         allowfullscreen>
       </iframe>
       <div class="status-msg">Connected to Green Room</div>
@@ -151,7 +151,8 @@
       const joinSection = document.getElementById('join-section');
       const iframe = document.getElementById('ninja-frame');
 
-      const targetUrl = `https://vdo.ninja/?room=theblatheringcallin&hash=c020&push&novideo&videodevice=0&screenshare=0&broadcast&autostart&label=${encodeURIComponent(callerName)}`;
+      // Stripped down to pure audio-only, bypassing all wizards
+      const targetUrl = `https://vdo.ninja/?room=theblatheringcallin&hash=c020&push&audioonly&cleanoutput&autostart&label=${encodeURIComponent(callerName)}`;
 
       iframe.src = targetUrl;
       joinSection.style.display = 'none';
