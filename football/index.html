@@ -25,8 +25,8 @@
       border: 1px solid #2f2f35;
       border-radius: 12px;
       width: 100%;
-      max-width: 460px;
-      padding: 32px 24px;
+      max-width: 500px;
+      padding: 36px 28px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
@@ -103,14 +103,14 @@
     }
     iframe {
       width: 100%;
-      height: 120px;
+      height: 320px;
       border: 1px solid #3f3f46;
       border-radius: 8px;
-      background: #000;
+      background: #121214;
     }
     .status-msg {
-      margin-top: 12px;
-      font-size: 0.9rem;
+      margin-top: 16px;
+      font-size: 0.95rem;
       color: #10b981;
       font-weight: 600;
     }
@@ -133,9 +133,13 @@
     </div>
 
     <div id="ninja-container">
-      <iframe id="ninja-frame" allow="microphone *; autoplay *; speaker-selection *;" allowfullscreen></iframe>
-      <div class="status-msg">Connected to Lobby</div>
-      <div class="instructions" style="margin-top: 6px;">Stay on this page. The host will bring you on stage shortly.</div>
+      <iframe 
+        id="ninja-frame" 
+        allow="microphone *; speaker-selection *; autoplay *;" 
+        allowfullscreen>
+      </iframe>
+      <div class="status-msg">Connected to Green Room</div>
+      <div class="instructions" style="margin-top: 6px;">Stay on this page. You will hear the host when you are brought on air.</div>
     </div>
   </div>
 
@@ -149,7 +153,8 @@
       const joinSection = document.getElementById('join-section');
       const iframe = document.getElementById('ninja-frame');
 
-      const targetUrl = `https://vdo.ninja/?room=${ROOM_NAME}&push&novideo&webcam=0&audioonly&cleanoutput&label=${encodeURIComponent(callerName)}&autostart`;
+      // Uses strict audio-only, disables camera tracks entirely, and gives adequate height
+      const targetUrl = `https://vdo.ninja/?room=${ROOM_NAME}&push&novideo&webcam=0&vd=0&ad=1&autostart&label=${encodeURIComponent(callerName)}`;
 
       iframe.src = targetUrl;
       joinSection.style.display = 'none';
